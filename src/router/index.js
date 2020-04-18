@@ -1,27 +1,53 @@
 import Vue from 'vue'
+
+import userquery from '../views/user/userquery'
+
+
+
 import VueRouter from 'vue-router'
-import Home from '../views/Home.vue'
+
 
 Vue.use(VueRouter)
 
-  const routes = [
+
+const routes = [
   {
     path: '/',
-    name: 'Home',
-    component: Home
+    name: 'login',
+    component: () => import('../views/login/login.vue'),
+    meta: {title: '登录'}
   },
   {
-    path: '/about',
-    name: 'About',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/About.vue')
+    path: '/adminindex',
+    name: 'adminindex',
+    component: () => import('../views/admin/index.vue'),
+    meta:{title:'办公管理系统-超级管理员',auth:true},
+    children: [
+        {path:'userquery',name:'userquery',component:userquery,meta:{title:'用户查询',auth:true}},
+    ]
   }
+
+
 ]
 
 const router = new VueRouter({
-  routes
+    routes
 })
+router.beforeEach((to,from,next) =>{
+    let title=to.meta.title || '叮咚办公管理系统';
+    document.title=title;
+    if (to.meta.auth) {
+        let token=sessionStorage.getItem('token');
+        if (token&&token!=''){
+            next();
+        } else {
+            next('/?redirect='+to.name);
+        }
+    }else {
+        next();
+    }
+
+
+} )
 
 export default router
